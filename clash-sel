@@ -1,0 +1,31 @@
+#!/bin/bash
+
+API_URL="localhost:9090"
+
+result=$(curl -s "$API_URL/proxies/Proxy")
+list=($(echo $result | jq -r .all[]))
+
+i=1
+for proxy in ${list[@]}; do
+    printf "%-2d %s\n" $i $proxy
+    ((i++))
+done
+
+read -p "input number:" choose
+
+if [[ ! "$choose" =~ [0-9]+ ]]; then
+    echo "not a valid number!"
+    exit -1
+fi
+
+if [[ "$choose" -lt 1 ]] || [[ "$choose" -gt "${#list[@]}" ]]; then
+    echo "not in list range!"
+    exit -1
+fi
+
+((choose--))
+proxy=${list[$choose]}
+
+curl -X PUT --header "Content-Type: application/json" --data "{\"name\":\"$proxy\"}" "$API_URL/proxies/Proxy"
+
+echo "You are using ${proxy} now."

@@ -1,0 +1,18 @@
+#!/bin/bash
+
+API_URL="localhost:9090"
+
+result=$(curl -s "$API_URL/proxies/Proxy")
+list=$(echo $result | jq -r .all[])
+now=$(echo $result | jq -r .now)
+
+echo "You are using ${now} now."
+
+i=1
+for proxy in $list; do
+    delay=$(curl -s "$API_URL/proxies/$proxy/delay?timeout=2000&url=http://www.gstatic.com/generate_204" | jq -r .delay)
+    [[ $delay = null ]] && delay="timeout" || delay="${delay}ms"
+    # echo $i\t$proxy\t ${delay}
+    printf "%-2d %-8s %7s\n" $i $proxy $delay
+    ((i++))
+done

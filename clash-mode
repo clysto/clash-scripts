@@ -1,0 +1,24 @@
+#!/bin/bash
+
+API_URL="localhost:9090"
+
+mode=$(curl -s "$API_URL/configs" | jq -r .mode)
+
+echo "Current mode: $mode"
+
+echo "A) rule"
+echo "B) global"
+
+read -p "input type:" choose
+
+if [[ ! "$choose" =~ ^[AaBb]$ ]]; then
+    echo "not a valid type!"
+    exit -1
+fi
+
+if [[ "$choose" =~ ^[Aa]$ ]]; then
+    curl -X PATCH --header "Content-Type: application/json" --data "{\"mode\":\"rule\"}" "$API_URL/configs"
+elif [[ "$choose" =~ ^[Bb]$ ]]; then
+    curl -X PATCH --header "Content-Type: application/json" --data "{\"mode\":\"global\"}" "$API_URL/configs"
+    curl -X PUT --header "Content-Type: application/json" --data "{\"name\":\"Proxy\"}" "$API_URL/proxies/GLOBAL"
+fi
